@@ -1,0 +1,49 @@
+[
+    {
+        "loss_function": "Logloss",
+        "custom_metric": [
+            "F1",
+            "Accuracy",
+            "AUC"
+        ],
+        "eval_metric": "AUC",
+        "learning_rate": 0.03,
+        "iterations": 15000,
+        "scale_pos_weight": 1.0,
+        "subsample": 0.66,
+        "min_data_in_leaf": 1,
+        "rsm": 1,
+        "leaf_estimation_method": "Gradient",
+        "one_hot_max_size": 2,
+        "fold_len_multiplier": 2,
+        "depth": 6,
+        "max_leaves": 31,
+        "bagging_temperature": 1,
+        "random_strength": 1,
+        "l2_leaf_reg": 3,
+        "border_count": 128,
+        "random_seed": 42,
+        "thread_count": -1,
+        "use_best_model": true,
+        "logging_level": "Verbose"
+    },
+    {
+        "objective": "binary:logistic",
+        "eval_metric": "auc",
+        "booster": "gbtree",
+        "eta": 0.03,
+        "gamma": 0.1,
+        "min_child_weight": 3,
+        "max_depth": 8,
+        "subsample": 0.7,
+        "colsample_bytree": 1.0,
+        "colsample_bylevel": 1.0,
+        "colsample_bynode": 1.0,
+        "lambda": 10,
+        "alpha": 0,
+        "missing": -999.0,
+        "seed": 42,
+        "nthread": -1,
+        "verbosity": 0
+    }
+]

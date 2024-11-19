@@ -1,0 +1,32 @@
+[
+    {
+        "loss_function": "RMSE",
+        "custom_metric": [
+            "RMSE",
+            "MAE"
+        ],
+        "eval_metric": "MAE",
+        "learning_rate": 0.03,
+        "iterations": 15000,
+        "subsample": 0.66,
+        "sampling_frequency": "PerTreeLevel",
+        "min_data_in_leaf": 1,
+        "rsm": 0.5,
+        "leaf_estimation_method": "Gradient",
+        "one_hot_max_size": 2,
+        "fold_len_multiplier": 2,
+        "depth": 10,
+        "grow_policy": "SymmetricTree",
+        "max_leaves": 31,
+        "bagging_temperature": 1,
+        "random_strength": 1,
+        "l2_leaf_reg": 18,
+        "early_stopping_rounds": 300,
+        "od_type": "Iter",
+        "border_count": 128,
+        "random_seed": 42,
+        "thread_count": -1,
+        "use_best_model": true,
+        "logging_level": "Verbose"
+    }
+]
