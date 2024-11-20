@@ -22,7 +22,7 @@ def get_model_params(task, mode2, num_classes=None):
         raise ValueError(f'Unknown task: {task}')
 
 
-def get_gpu_params(mode2):
+def get_gpu_params(mode2, num_classes=None):
     params = dict()
     if mode2 in {'xgb', 'xgboost'}:
         params['tree_method'] = 'hist'  # gpu_hist
@@ -32,7 +32,7 @@ def get_gpu_params(mode2):
         # params['gpu_device_id'] = 0
         params['device'] = 'gpu'
     elif mode2 in {'cb', 'catboost'}:
-        if 'num_classes' in params and params['num_classes'] > 2:  # multi-class with gpu seem not supported in catboost
+        if num_classes is not None and num_classes > 2:  # multi-class with gpu seem not supported in catboost
             pass
         else:  # regression or binary classification
             params['task_type'] = 'GPU'
