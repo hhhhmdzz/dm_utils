@@ -60,6 +60,11 @@ def get_reg_data_structure(x, y, model_mode):
             if y is not None:
                 y = y.values
                 y = y.reshape(-1, 1)
+        elif mode2 == 'ngboost' and len(y.shape) == 2 and y.shape[1] == 1:
+            if isinstance(y, pd.DataFrame):
+                y = y.iloc[:, 0]
+            elif isinstance(y, np.ndarray):
+                y = y[:, 0]
         data = (x, ) if y is None else (x, y)
     elif mode1 == mode2 == 'xgboost':
         data = xgb.DMatrix(x, label=y)
