@@ -81,3 +81,17 @@
 
 >注：
 >ngboost 只有 `NGBRegressor` 支持 `early_stop_rounds`，`NGBClassifier` 不支持
+
+特征、特诊重要性属性/方法：
+
+|  `mode1`, `mode2`  |   `feature` 特征   | `importance` 特征重要性 |      |
+| :----------------: | :----------------: | :---------------------: | :--: |
+|  sklearn, sklearn  | feature_names_in_  |  feature_importances_   |      |
+|  sklearn, xgboost  | feature_names_in_  |  feature_importances_   |      |
+| sklearn, lightgbm  |   feature_name_    |  feature_importances_   |      |
+| sklearn, catboost  |   feature_names_   |  feature_importances_   |      |
+|  sklearn, ngboost  |         -          |  feature_importances_   |      |
+|  sklearn, tabnet   |         -          |  feature_importances_   |      |
+|  xgboost, xgboost  | get_score().keys() |  get_score().values()   |      |
+| lightgbm, lightgbm |   feature_name()   |  feature_importance()   |      |
+| catboost, catboost |   feature_names_   |  feature_importances_   |      |
