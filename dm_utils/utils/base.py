@@ -64,6 +64,21 @@ def get_model_mode(model):
     return mode1, mode2
 
 
+def get_model_name(model):
+    mode1, mode2 = get_model_mode(model)
+    if mode1 == 'sklearn':
+        return model.__class__.__name__
+    else:
+        if mode2 == 'xgboost':
+            return 'XGBoost'
+        elif mode2 == 'lightgbm':
+            return 'LightGBM'
+        elif mode2 == 'catboost':
+            return 'CatBoost'
+        else:
+            raise ValueError(f"model {model} is not supported")
+
+
 _xgb_log_level = {  # verbosity
     -1: 0,
     0: 0,  # silent
