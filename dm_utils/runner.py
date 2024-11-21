@@ -5,6 +5,7 @@ import lightgbm as lgb
 import catboost as cb
 import ngboost as ngb
 
+from .evaluate.score import logits2prob
 from .utils.base import get_model_mode, get_log_level
 from .task import get_model_from_str, get_data_structure
 from .param import get_model_params, get_gpu_params
@@ -86,6 +87,8 @@ def predict(task, model, x):
         elif mode1 in {'xgboost', 'catboost'}:
             data = get_data_structure(x, None, (mode1, mode2), task)
             prediction = model.predict(data)
+            if mode1 == 'catboost':
+                prediction = logits2prob(prediction)
 
         if len(prediction.shape) == 2 and prediction.shape[1] == 2:
             prediction = prediction[:, 1]

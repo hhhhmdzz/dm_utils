@@ -1,7 +1,25 @@
 import numpy as np
 import pandas as pd
+from scipy.special import softmax
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+
+def logits2prob(logits):
+    logits = np.array(logits).reshape(logits.shape[0], -1)
+    if logits.shape[1] == 1:
+        logits = np.hstack([-logits, logits])
+        return softmax(logits, axis=1)[:, 1]
+    else:
+        return softmax(logits, axis=1)
+
+
+def logits2label(logits):
+    logits = np.array(logits).reshape(logits.shape[0], -1)
+    if logits.shape[1] == 1:
+        return (logits > 0).astype('int')
+    else:
+        return logits.argmax(axis=1)
 
 
 def prob2label(proba):

@@ -27,17 +27,17 @@
 
 不同模式在不同任务（分类/回归）不同阶段（训练/预测）下的数据（特征/标签）格式如下：
 
-|  `mode1`, `mode2`  | 训练、预测输入数据类型 | 分类、回归训练输入标签形状 |   分类预测输出标签、概率形状    | 回归预测输出形状 |
-| :----------------: | :--------------------: | :------------------------: | :-----------------------------: | :--------------: |
-|  sklearn, sklearn  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |      (n, )       |
-|  sklearn, xgboost  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |      (n, )       |
-| sklearn, lightgbm  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |      (n, )       |
-| sklearn, catboost  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |      (n, )       |
-|  sklearn, ngboost  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |      (n, )       |
-|  sklearn, tabnet   |           np           |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |      (n, 1)      |
-|  xgboost, xgboost  |      xgb.DMatrix       |       (n, ), (n, 1)        | (n, )、(n, ), (n, num_classes)  |      (n, )       |
-| lightgbm, lightgbm |  lgb.Dataset、np, pd   |       (n, ), (n, 1)        | (n, )、(n, ), (n, num_classes)  |      (n, )       |
-| catboost, catboost |        cb.Pool         |       (n, ), (n, 1)        | (n, )、(n, ), (n, num_classes)  |      (n, )       |
+|  `mode1`, `mode2`  |  训练、预测输入数据类型 |  分类、回归训练输入标签形状  |    分类预测输出标签、概率形状     |  输出是否归一化  | 回归预测输出形状 |
+| :----------------: | :--------------------: | :------------------------: | :-----------------------------: | :--------------: | ---------------- |
+|  sklearn, sklearn  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |        prob      |      (n, )       |
+|  sklearn, xgboost  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |        prob      |      (n, )       |
+| sklearn, lightgbm  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |        prob      |      (n, )       |
+| sklearn, catboost  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |        prob      |      (n, )       |
+|  sklearn, ngboost  |         np, pd         |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |        prob      |      (n, )       |
+|  sklearn, tabnet   |           np           |       (n, ), (n, 1)        | (n, )、(n, 2), (n, num_classes) |        prob      |      (n, 1)      |
+|  xgboost, xgboost  |      xgb.DMatrix       |       (n, ), (n, 1)        | (n, )、(n, ), (n, num_classes)  |        prob      |      (n, )       |
+| lightgbm, lightgbm |  lgb.Dataset、np, pd   |       (n, ), (n, 1)        | (n, )、(n, ), (n, num_classes)  |        prob      |      (n, )       |
+| catboost, catboost |        cb.Pool         |       (n, ), (n, 1)        | (n, )、(n, ), (n, num_classes)  |       logits     |      (n, )       |
 
 对于某些存在特征重要性的模型（比如树模型、TabNet 等），其获取特征名字和特征重要性的接口也不同，因此需要根据 `model_mode` 来选择不同的接口，具体如下：
 
