@@ -101,7 +101,8 @@ def get_feature_importance(
     if f_is_list:
         feature_importances = [get_feature_importance(f, i, sort=sort, ascending=ascending) for f, i in zip(feature, importance)]
         if reduce is not None:
-            feature_importances = pd.DataFrame(pd.concat(feature_importances, axis=1).agg(reduce, axis=1), columns=['importance'])
+            feature_importances = [feature_importance.set_index('feature') for feature_importance in feature_importances]
+            feature_importances = pd.DataFrame(pd.concat(feature_importances, axis=1).agg(reduce, axis=1), columns=['importance']).reset_index()
             if sort:
                 feature_importances.sort_values(by='importance', ascending=ascending, inplace=True, ignore_index=True)
         return feature_importances
