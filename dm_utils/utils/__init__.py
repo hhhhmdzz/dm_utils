@@ -5,3 +5,4 @@ from .tree import (
     get_feature_importance_from_model,
     plot_feature_importance
 )
+from .cprint import info, error, warning, success, debug, critical
