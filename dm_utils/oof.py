@@ -5,6 +5,7 @@ from copy import deepcopy
 from sklearn.model_selection import KFold, GroupKFold, StratifiedKFold, StratifiedGroupKFold
 from sklearn.base import BaseEstimator
 from sklearn.metrics import accuracy_score, mean_squared_error
+from typing import Dict, Union
 
 import dm_utils.runner as u_runner
 # import dm_utils.evaluate as u_eval
@@ -88,13 +89,13 @@ class OOF(BaseEstimator):
             self.y_train_pred = np.zeros(len(X_train))
         else:
             self.y_train_pred = np.zeros((len(X_train), self.num_classes))
-        self._scores = {}
+        self._scores = {}  # Dict[Dict[str, Union[str, float]]], {'foldi': {'model': model_name, 'score1': score1, 'score2': score2, ...}}
         for i, (trn_idx, val_idx) in enumerate(self.kf):
             t_fold_0 = time()
             model = self.model[i] if self.is_sep_model else self.model
             model_name = self.model_name[i] if self.is_sep_model else self.model_name
 
-            uu_print.info(f"Model {model_name}, Fold {i+1} / {self.folds} begin.")
+            uu_print.info(f"Model {model_name}, Fold {i+1} / {self.folds} training begin.")
             X_trn, X_val = X_train.iloc[trn_idx], X_train.iloc[val_idx]
             y_trn, y_val = y_train.iloc[trn_idx], y_train.iloc[val_idx]
             model = u_runner.train(
@@ -104,22 +105,22 @@ class OOF(BaseEstimator):
             self.y_train_pred[val_idx] = u_runner.predict(self._task, model, X_val)
             val_scores = [func(y_val, self.y_train_pred[val_idx]) for func in self.score_funcs]
             val_scores = dict(zip(self.score_names, val_scores))
-            val_scores['model'] = model_name
+            val_scores['model'] = model_name  # Dict[str, Union[str, float]], {'model': model_name, 'score1': score1, 'score2': score2, ...}
             self._scores[f'fold{i}'] = val_scores
 
             t_fold = time() - t_fold_0
-            if record_time: uu_print.info(f'Model {model_name}, Fold {i+1} / {self.folds} finish, cost time {round(t_fold, 3)} s.')
-            else: uu_print.info(f'Model {model_name}, Fold {i+1} / {self.folds} finish.')
+            if record_time: uu_print.info(f'Model {model_name}, Fold {i+1} / {self.folds} training finish, cost time {round(t_fold, 3)} s.')
+            else: uu_print.info(f'Model {model_name}, Fold {i+1} / {self.folds} training finish.')
             uu_print.success(f'{i+1} / {self.folds} fold validation scores: {val_scores}')
 
         valid_scores = [func(y_train, self.y_train_pred) for func in self.score_funcs]
         valid_scores = dict(zip(self.score_names, valid_scores))
-        valid_scores['model'] = self.all_model_name
+        valid_scores['model'] = self.all_model_name  # Dict[str, Union[str, float]], {'model': model_name, 'score1': score1, 'score2': score2, ...}
         self._scores['all'] = valid_scores
 
         t_fit = time() - t_fit_0
-        if record_time: uu_print.info(f'train finish, cost time {round(t_fit, 3)} s.')
-        else: uu_print.info(f'train finish.')
+        if record_time: uu_print.info(f'{self.folds}-fold training finish, cost time {round(t_fit, 3)} s.')
+        else: uu_print.info(f'{self.folds}-fold training finish.')
         uu_print.success(f'total {self.folds}-fold validation scores:{valid_scores}')
 
         self._scores = self.get_scores()
@@ -168,8 +169,8 @@ class OOF(BaseEstimator):
     def task(self):
         return self._task
 
-    def get_scores(self):
-        assert self._scores != {}, 'Model is not trained yet.'
+    def get_scores(self) -> pd.DataFrame:
+        assert len(self._scores) > 0, 'Model is not trained yet.'
         return pd.DataFrame(self._scores).T if isinstance(self._scores, dict) else self._scores
 
     @property
@@ -183,13 +184,10 @@ class OOF(BaseEstimator):
             self.feature, sort=sort, ascending=ascending, reduce=reduce
         )
 
-    @property
     def feature_importances(self):
         return self.get_feature_importance(reduce=None)
 
-    @property
     def feature_importance(self, fold=None, reduce='sum'):
-        assert not self.is_sep_model, 'Feature importance is not available for separate models.'
         return self.get_feature_importance(fold=fold, reduce=reduce)
 
 
