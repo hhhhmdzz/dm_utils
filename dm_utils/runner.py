@@ -81,7 +81,9 @@ def predict(task, model, x):
 
     if task == 'cls':
         if mode1 == 'sklearn':
-            prediction = model.predict_proba(x.values)
+            if mode2 == 'tabnet':
+                x = x.values
+            prediction = model.predict_proba(x)
         elif mode1 == 'lightgbm':
             prediction = model.predict(x)
         elif mode1 in {'xgboost', 'catboost'}:
