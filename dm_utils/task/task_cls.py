@@ -10,6 +10,8 @@ import ngboost as ngb
 from pytorch_tabnet.abstract_model import TabModel
 from pytorch_tabnet import tab_model as tabnet
 
+from dm_utils.utils import cprint as uu_print
+
 _str2skl_cls_model = {
     'dt': DecisionTreeClassifier(),
     'rf': RandomForestClassifier(),
@@ -38,14 +40,15 @@ _str2ori_cls_model = {
 
 def get_cls_model_from_str(model_str, sklearn_api):
     if sklearn_api:
-        assert model_str in _str2skl_cls_model, f"model_str {model_str} is not supported"
+        assert model_str in _str2skl_cls_model, f"model_str '{model_str}' is not supported"
         model = _str2skl_cls_model[model_str]
     else:
         if model_str not in _str2ori_cls_model:
             if model_str not in _str2skl_cls_model:
-                raise ValueError(f"model_str {model_str} is not supported")
+                raise ValueError(f"model_str '{model_str}' is not supported")
             else:
-                model_str = _str2skl_cls_model[model_str]
+                uu_print.conflict(f"model_str '{model_str}' is not supported when sklearn_api=False, automatically use sklearn api.")
+                model = _str2skl_cls_model[model_str]
         else:
             model = _str2ori_cls_model[model_str]
 
