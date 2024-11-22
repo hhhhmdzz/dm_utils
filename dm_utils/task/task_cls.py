@@ -23,12 +23,13 @@ _str2skl_cls_model = {
     'lightgbm': lgb.LGBMClassifier(),
     'cb': cb.CatBoostClassifier(),
     'catboost': cb.CatBoostClassifier(),
-    'ngb': ngb.NGBClassifier(),
-    'ngboost': ngb.NGBClassifier(),
+    'ngb': ngb.NGBClassifier,
+    'ngboost': ngb.NGBClassifier,
     'tabnet': tabnet.TabNetClassifier(),
 }
 for k in _str2skl_cls_model.keys():
-    set_params(_str2skl_cls_model[k])
+    if k not in {'ngb', 'ngboost'}:
+        set_params(_str2skl_cls_model[k])
 
 _str2ori_cls_model = {
     'xgb': xgb.Booster,
@@ -37,8 +38,8 @@ _str2ori_cls_model = {
     'lightgbm': lgb.Booster,
     'cb': cb.CatBoost,
     'catboost': cb.CatBoost,
-    'ngb': ngb.NGBoost,
-    'ngboost': ngb.NGBoost,
+    # 'ngb': ngb.NGBoost,
+    # 'ngboost': ngb.NGBoost,
 }
 
 

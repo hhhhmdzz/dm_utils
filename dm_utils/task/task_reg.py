@@ -23,12 +23,13 @@ _str2skl_reg_model = {
     'lightgbm': lgb.LGBMRegressor(),
     'cb': cb.CatBoostRegressor(),
     'catboost': cb.CatBoostRegressor(),
-    'ngb': ngb.NGBRegressor(),
-    'ngboost': ngb.NGBRegressor(),
+    'ngb': ngb.NGBRegressor,
+    'ngboost': ngb.NGBRegressor,
     'tabnet': tabnet.TabNetRegressor(),
 }
 for k in _str2skl_reg_model.keys():
-    set_params(_str2skl_reg_model[k])
+    if k not in {'ngb', 'ngboost'}:
+        set_params(_str2skl_reg_model[k])
 
 _str2ori_reg_model = {
     'xgb': xgb.Booster,
@@ -37,8 +38,8 @@ _str2ori_reg_model = {
     'lightgbm': lgb.Booster,
     'cb': cb.CatBoost,
     'catboost': cb.CatBoost,
-    'ngb': ngb.NGBoost,
-    'ngboost': ngb.NGBoost,
+    # 'ngb': ngb.NGBoost,
+    # 'ngboost': ngb.NGBoost,
 }
 
 

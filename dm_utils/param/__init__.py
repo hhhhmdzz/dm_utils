@@ -7,18 +7,18 @@ from .set_params import set_params
 
 def get_model_params(task, mode2, num_classes=None):
     if mode2 == 'xgboost':
-        model_paras = XGBModelParams(num_classes)
+        model_params = XGBModelParams(num_classes)
     elif mode2 == 'lightgbm':
-        model_paras = LGBModelParams(num_classes)
+        model_params = LGBModelParams(num_classes)
     elif mode2 == 'catboost':
-        model_paras = CBModelParams(num_classes)
+        model_params = CBModelParams(num_classes)
     else:
         raise ValueError(f'Unknown model: {mode2}')
 
     if task == 'reg':
-        return model_paras.reg_params
+        return model_params.reg_params
     elif task == 'cls':
-        return model_paras.cls_params
+        return model_params.cls_params
     else:
         raise ValueError(f'Unknown task: {task}')
 

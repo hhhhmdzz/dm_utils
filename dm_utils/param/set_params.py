@@ -1,9 +1,11 @@
 from sklearn.tree import BaseDecisionTree
 from sklearn.ensemble import BaseEnsemble
+from ngboost.distns import k_categorical
+
 from dm_utils.utils.base import get_model_mode, get_log_level
 
 
-def set_params(model, epochs=1000, eval_rounds=100, early_stop_rounds=200, log_level=0, seed=42):
+def set_params(model, epochs=1000, eval_rounds=100, early_stop_rounds=200, log_level=0, seed=42, num_classes=None):
     if isinstance(model, list):
         for m in model:
             set_params(m, epochs, eval_rounds, early_stop_rounds, log_level, seed)
@@ -25,6 +27,9 @@ def set_params(model, epochs=1000, eval_rounds=100, early_stop_rounds=200, log_l
                 log_level = get_log_level('cb', log_level)
                 model.set_params(iterations=epochs, logging_level=log_level, random_state=seed)
             elif mode2 == 'ngboost':
+                if num_classes is not None:
+                    model = model(Dist=k_categorical(num_classes))
                 model.set_params(n_estimators=epochs, verbose_eval=eval_rounds, early_stopping_rounds=early_stop_rounds, verbose=True, radom_state=seed)
             elif mode1 == 'tabnet':
                 model.set_params(verbose=eval_rounds, seed=seed)
+    return model

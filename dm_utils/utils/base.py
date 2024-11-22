@@ -13,7 +13,7 @@ from pytorch_tabnet import tab_model as tabnet
 
 def is_sklearn_mode(model):
     cb_sklearn_model = (cb.CatBoostClassifier, cb.CatBoostRegressor, cb.CatBoostRanker)
-    return isinstance(model, (BaseEstimator, *cb_sklearn_model))
+    return isinstance(model, (BaseEstimator, *cb_sklearn_model)) or (type(model) is type and issubclass(model, BaseEstimator))
 
 
 def is_xgboost_mode(model):
@@ -29,7 +29,7 @@ def is_catboost_mode(model):
 
 
 def is_ngboost_mode(model):
-    return isinstance(model, ngb.NGBoost)
+    return isinstance(model, ngb.NGBoost) or (type(model) is type and issubclass(model, ngb.NGBoost))
 
 
 def is_tabnet_mode(model):

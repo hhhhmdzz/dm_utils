@@ -65,11 +65,11 @@ class OOF(BaseEstimator):
         if self.is_sep_model:
             assert len(model) == folds, f'len(model) must equal to folds if model is a list, but len(model) == {len(model)} != folds == {folds}'
             self.model = [u_task.get_model_from_str(task, model[i], sklearn_api) if isinstance(model[i], str) else model[i] for i in range(folds)]
-            u_param.set_params(self.model, epochs=epochs, eval_rounds=eval_rounds, early_stop_rounds=early_stop_rounds, log_level=log_level, seed=seed)
+            # u_param.set_params(self.model, epochs=epochs, eval_rounds=eval_rounds, early_stop_rounds=early_stop_rounds, log_level=log_level, seed=seed)
             self.model_name = [uu_base.get_model_name(m) for m in self.model]
         else:
             self.model = u_task.get_model_from_str(task, model, sklearn_api) if isinstance(model, str) else model
-            u_param.set_params(self.model, epochs=epochs, eval_rounds=eval_rounds, early_stop_rounds=early_stop_rounds, log_level=log_level, seed=seed)
+            # u_param.set_params(self.model, epochs=epochs, eval_rounds=eval_rounds, early_stop_rounds=early_stop_rounds, log_level=log_level, seed=seed)
             self.model_name = uu_base.get_model_name(self.model)
         self.all_model_name = ','.join(np.unique(self.model_name).tolist()) if self.is_sep_model else self.model_name
 
@@ -84,7 +84,7 @@ class OOF(BaseEstimator):
         self.train_size = self.data_size - self.valid_size
         self.kf = self._get_kfold(X_train, y_train, train_size=self.train_size, groups=self.groups)
 
-        self.num_classes = len(np.unique(y_train)) if self._task == 'cls' else -1
+        self.num_classes = len(np.unique(y_train)) if self._task == 'cls' else None
 
         t_fit_0 = time()
         uu_print.info(f'{self.folds}-fold training begin.')
@@ -96,6 +96,9 @@ class OOF(BaseEstimator):
         for i, (trn_idx, val_idx) in enumerate(self.kf):
             t_fold_0 = time()
             model = self.model[i] if self.is_sep_model else self.model
+            model = u_param.set_params(
+                model, epochs=self.epochs, eval_rounds=self.eval_rounds, early_stop_rounds=self.early_stop_rounds,
+                log_level=self.log_level, seed=self.seed, num_classes=self.num_classes)
             model_name = self.model_name[i] if self.is_sep_model else self.model_name
 
             uu_print.info(f"Model {model_name}, Fold {i+1} / {self.folds} training begin.")
