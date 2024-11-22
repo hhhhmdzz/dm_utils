@@ -2,6 +2,7 @@ from .param_base import param_base
 from .param_xgb import XGBModelParams
 from .param_lgb import LGBModelParams
 from .param_cb import CBModelParams
+from .set_params import set_params
 
 
 def get_model_params(task, mode2, num_classes=None):

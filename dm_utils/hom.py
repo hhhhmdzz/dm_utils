@@ -6,6 +6,7 @@ from sklearn.base import BaseEstimator
 from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.model_selection import train_test_split
 
+import dm_utils.param as u_param
 import dm_utils.runner as u_runner
 # import dm_utils.evaluate as u_eval
 from dm_utils.evaluate import score as ue_score
@@ -46,9 +47,11 @@ class HOM(BaseEstimator):
         self.is_sep_model = isinstance(model, list)  # is separate models
         if self.is_sep_model:
             self.model = [u_task.get_model_from_str(task, m, sklearn_api) if isinstance(m, str) else m for m in model]
+            u_param.set_params(self.model, epochs=epochs, eval_rounds=eval_rounds, early_stop_rounds=early_stop_rounds, log_level=log_level, seed=seed)
             self.model_name = [uu_base.get_model_name(m) for m in self.model]
         else:
             self.model = u_task.get_model_from_str(task, model, sklearn_api) if isinstance(model, str) else model
+            u_param.set_params(self.model, epochs=epochs, eval_rounds=eval_rounds, early_stop_rounds=early_stop_rounds, log_level=log_level, seed=seed)
             self.model_name = uu_base.get_model_name(self.model)
         self.num_models = len(self.model) if self.is_sep_model else 1
         self.all_model_name = ','.join(np.unique(self.model_name).tolist()) if self.is_sep_model else self.model_name

@@ -7,6 +7,7 @@ from sklearn.base import BaseEstimator
 from sklearn.metrics import accuracy_score, mean_squared_error
 from typing import Dict, Union
 
+import dm_utils.param as u_param
 import dm_utils.runner as u_runner
 # import dm_utils.evaluate as u_eval
 from dm_utils.evaluate import score as ue_score
@@ -64,9 +65,11 @@ class OOF(BaseEstimator):
         if self.is_sep_model:
             assert len(model) == folds, f'len(model) must equal to folds if model is a list, but len(model) == {len(model)} != folds == {folds}'
             self.model = [u_task.get_model_from_str(task, model[i], sklearn_api) if isinstance(model[i], str) else model[i] for i in range(folds)]
+            u_param.set_params(self.model, epochs=epochs, eval_rounds=eval_rounds, early_stop_rounds=early_stop_rounds, log_level=log_level, seed=seed)
             self.model_name = [uu_base.get_model_name(m) for m in self.model]
         else:
             self.model = u_task.get_model_from_str(task, model, sklearn_api) if isinstance(model, str) else model
+            u_param.set_params(self.model, epochs=epochs, eval_rounds=eval_rounds, early_stop_rounds=early_stop_rounds, log_level=log_level, seed=seed)
             self.model_name = uu_base.get_model_name(self.model)
         self.all_model_name = ','.join(np.unique(self.model_name).tolist()) if self.is_sep_model else self.model_name
 

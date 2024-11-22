@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 from sklearn.base import BaseEstimator
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -11,6 +12,7 @@ from pytorch_tabnet.abstract_model import TabModel
 from pytorch_tabnet import tab_model as tabnet
 
 from dm_utils.utils import cprint as uu_print
+from dm_utils.param.set_params import set_params
 
 _str2skl_reg_model = {
     'dt': DecisionTreeRegressor(),
@@ -25,6 +27,8 @@ _str2skl_reg_model = {
     'ngboost': ngb.NGBRegressor(),
     'tabnet': tabnet.TabNetRegressor(),
 }
+for k in _str2skl_reg_model.keys():
+    set_params(_str2skl_reg_model[k])
 
 _str2ori_reg_model = {
     'xgb': xgb.Booster,
@@ -52,7 +56,7 @@ def get_reg_model_from_str(model_str, sklearn_api):
         else:
             model = _str2ori_reg_model[model_str]
 
-    return model
+    return deepcopy(model)
 
 
 def get_reg_data_structure(x, y, model_mode):
