@@ -30,6 +30,6 @@ def set_params(model, epochs=1000, eval_rounds=100, early_stop_rounds=200, log_l
                 if num_classes is not None:
                     model = model(Dist=k_categorical(num_classes))
                 model.set_params(n_estimators=epochs, verbose_eval=eval_rounds, early_stopping_rounds=early_stop_rounds, verbose=True, radom_state=seed)
-            elif mode1 == 'tabnet':
+            elif mode2 == 'tabnet':
                 model.set_params(verbose=eval_rounds, seed=seed)
     return model
