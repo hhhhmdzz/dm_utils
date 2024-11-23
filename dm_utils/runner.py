@@ -11,7 +11,7 @@ from .task import get_model_from_str, get_data_structure
 from .param import get_model_params, get_gpu_params
 
 
-def train(task, model, x, y, x_evals, y_evals, params=None, epochs=1000, eval_rounds=100, early_stop_rounds=1000, log_level=0, use_gpu4tree=False):
+def train(task, model, x, y, x_evals, y_evals, params=None, epochs=1000, lr=0.01, eval_rounds=100, early_stop_rounds=1000, log_level=0, use_gpu4tree=False):
     """
 
     Args:
@@ -63,14 +63,17 @@ def train(task, model, x, y, x_evals, y_evals, params=None, epochs=1000, eval_ro
             model.fit(*data, **params)
     elif mode1 == 'xgboost':
         params['verbosity'] = get_log_level(mode2, log_level)
+        params['eta'] = lr
         model = xgb.train(params=params, dtrain=data, evals=[(data_evals, 'valid'), ], num_boost_round=epochs, verbose_eval=eval_rounds, early_stopping_rounds=early_stop_rounds)
     elif mode1 == 'lightgbm':
         params['verbosity'] = get_log_level(mode2, log_level)
         params['num_boost_round'] = epochs
+        params['learning_rate'] = lr
         callbacks = [lgb.log_evaluation(period=eval_rounds), lgb.early_stopping(stopping_rounds=early_stop_rounds)]
         model = lgb.train(params=params, train_set=data, valid_sets=data_evals, callbacks=callbacks)
     elif mode1 == 'catboost':
         params['logging_level'] = get_log_level(mode2, log_level)
+        params['learning_rate'] = lr
         model = cb.train(params=params, dtrain=data, eval_set=data_evals, iterations=epochs, verbose_eval=eval_rounds, early_stopping_rounds=early_stop_rounds)
     
     return model

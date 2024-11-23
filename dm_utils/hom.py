@@ -22,10 +22,24 @@ from dm_utils.utils import tree as uu_tree
 class HOM(BaseEstimator):
     """
     HOM: Hold-Out Method
+
+    Parameters
+    ----------
+    task: reg, cls
+    model: model, str, list of model, list of str
+    epochs: number of epochs
+    lr: learning rate
+    eval_rounds: number of rounds to evaluate
+    early_stop_rounds: number of rounds to early stop
+    log_level: log level
+    score_names: score names
+    score_funcs: score functions
+    sklearn_api: whether use sklearn api
+    seed: random seed
     """
     def __init__(
         self, task, model,
-        epochs=1000, eval_rounds=100, early_stop_rounds=200, log_level=0,
+        epochs=1000, lr=0.01, eval_rounds=100, early_stop_rounds=200, log_level=0,
         score_names='', score_funcs=None,
         sklearn_api=False,
         seed=42,
@@ -35,6 +49,7 @@ class HOM(BaseEstimator):
         self.seed = seed
         
         self.epochs = epochs
+        self.lr = lr
         self.eval_rounds = eval_rounds
         self.early_stop_rounds = early_stop_rounds
         self.log_level = log_level
@@ -82,14 +97,16 @@ class HOM(BaseEstimator):
         for i, model in enumerate(self.model if self.is_sep_model else [self.model]):
             t_fold_0 = time()
             model = u_param.set_params(
-                model, epochs=self.epochs, eval_rounds=self.eval_rounds, early_stop_rounds=self.early_stop_rounds,
-                log_level=self.log_level, seed=self.seed, num_classes=self.num_classes)
+                model, epochs=self.epochs, lr=self.lr, eval_rounds=self.eval_rounds,
+                early_stop_rounds=self.early_stop_rounds, log_level=self.log_level,
+                seed=self.seed, num_classes=self.num_classes)  # set params
             model_name = self.model_name[i] if self.is_sep_model else self.model_name
 
             uu_print.info(f"Model {model_name} {i+1} / {self.num_models} training begin.")
             model = u_runner.train(
                 self._task, model, X_train, y_train, X_valid, y_valid,
-                epochs=self.epochs, eval_rounds=self.eval_rounds, early_stop_rounds=self.early_stop_rounds, log_level=self.log_level)
+                epochs=self.epochs, lr=self.lr, eval_rounds=self.eval_rounds,
+                early_stop_rounds=self.early_stop_rounds, log_level=self.log_level)  # train
             if self.is_sep_model:
                 self.models.append(deepcopy(model))
             else:

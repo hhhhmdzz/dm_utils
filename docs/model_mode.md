@@ -55,17 +55,29 @@
 
 参数所在类/方法：
 
-|  `mode1`, `mode2`  |      `epochs` 训练轮数      |   `eval_rounds` 验证轮数    |     `early_stop_rounds` 早停轮数     |      `log_level` 日志等级      |
-| :----------------: | :-------------------------: | :-------------------------: | :----------------------------------: | :----------------------------: |
-|  sklearn, sklearn  | BaseEstimator(n_estimators) |              -              |                  -                   |               -                |
-|  sklearn, xgboost  | BaseEstimator(n_estimators) |        fit(verbose)         | BaseEstimator(early_stopping_rounds) |    BaseEstimator(verbosity)    |
-| sklearn, lightgbm  | BaseEstimator(n_estimators) |       fit(callbacks)        |            fit(callbacks)            |    BaseEstimator(verbosity)    |
-| sklearn, catboost  |  BaseEstimator(iterations)  |      fit(verbose_eval)      |      fit(early_stopping_rounds)      |  BaseEstimator(logging_level)  |
-|  sklearn, ngboost  | BaseEstimator(n_estimators) | BaseEstimator(verbose_eval) | BaseEstimator(early_stopping_rounds) |               -                |
-|  sklearn, tabnet   |       fit(max_epochs)       |   BaseEstimator(verbose)    |            fit(patience)             |               -                |
-|  xgboost, xgboost  |   train(num_boost_round)    |     train(verbose_eval)     |     train(early_stopping_rounds)     |   train(params['verbosity'])   |
-| lightgbm, lightgbm |   train(num_boost_round)    |      train(callbacks)       |           train(callbacks)           |   train(params['verbosity'])   |
-| catboost, catboost |      train(iterations)      |     train(verbose_eval)     |     train(early_stopping_rounds)     | train(params['logging_level']) |
+|  `mode1`, `mode2`  |      `epochs` 训练轮数      |              `lr` 学习率               |   `eval_rounds` 验证轮数    |
+| :----------------: | :-------------------------: | :-----------------------------------: | :-------------------------: |
+|  sklearn, sklearn  | BaseEstimator(n_estimators) |                   -                   |              -              |
+|  sklearn, xgboost  | BaseEstimator(n_estimators) |     BaseEstimator(learning_rate)      |        fit(verbose)         |
+| sklearn, lightgbm  | BaseEstimator(n_estimators) |     BaseEstimator(learning_rate)      |       fit(callbacks)        |
+| sklearn, catboost  |  BaseEstimator(iterations)  |     BaseEstimator(learning_rate)      |      fit(verbose_eval)      |
+|  sklearn, ngboost  | BaseEstimator(n_estimators) |     BaseEstimator(learning_rate)      | BaseEstimator(verbose_eval) |
+|  sklearn, tabnet   |       fit(max_epochs)       | BaseEstimator(optimizer_params['lr']) |   BaseEstimator(verbose)    |
+|  xgboost, xgboost  |   train(num_boost_round)    |         train(params['eta'])          |     train(verbose_eval)     |
+| lightgbm, lightgbm |   train(num_boost_round)    |    train(params['learning_rate'])     |      train(callbacks)       |
+| catboost, catboost |      train(iterations)      |    train(params['learning_rate'])     |     train(verbose_eval)     |
+
+|  `mode1`, `mode2`  |     `early_stop_rounds` 早停轮数     |      `log_level` 日志等级      |
+| :----------------: | :----------------------------------: | :----------------------------: |
+|  sklearn, sklearn  |                  -                   |               -                |
+|  sklearn, xgboost  | BaseEstimator(early_stopping_rounds) |    BaseEstimator(verbosity)    |
+| sklearn, lightgbm  |            fit(callbacks)            |    BaseEstimator(verbosity)    |
+| sklearn, catboost  |      fit(early_stopping_rounds)      |  BaseEstimator(logging_level)  |
+|  sklearn, ngboost  | BaseEstimator(early_stopping_rounds) |               -                |
+|  sklearn, tabnet   |            fit(patience)             |               -                |
+|  xgboost, xgboost  |     train(early_stopping_rounds)     |   train(params['verbosity'])   |
+| lightgbm, lightgbm |           train(callbacks)           |   train(params['verbosity'])   |
+| catboost, catboost |     train(early_stopping_rounds)     | train(params['logging_level']) |
 
 |  `mode1`, `mode2`  | `data` 训练数据  | `data_evals` 验证数据 |      |      |
 | :----------------: | :--------------: | :-------------------: | :--: | :--: |
