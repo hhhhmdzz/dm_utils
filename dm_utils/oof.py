@@ -204,6 +204,14 @@ class OOF(BaseEstimator):
     def feature_importance(self, fold=None, reduce='sum'):
         return self.get_feature_importance(fold=fold, reduce=reduce)
 
+    def plot_feature_importance(self, topk=20, save_img=False, save_path='feature_importance.png', show_img=True):
+        assert len(self.models) != 0, 'Model is not trained yet.'
+        uu_tree.plot_feature_importance(
+            self.feature_importance(), topk=topk,
+            save_img=save_img, save_path=save_path,
+            show_img=show_img,
+        )
+
 
 if __name__ == '__main__':
     pass

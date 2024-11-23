@@ -174,7 +174,7 @@ def plot_feature_importance(
     plt.figure(figsize=(width, height), dpi=100)
     sns.barplot(
         data=features_importance, y='feature', x='importance',
-        orient='horizontal', palette='husl',
+        orient='horizontal', palette='husl', hue='feature', legend=False,
     )
     plt.title('Feature Importance')
     plt.ylabel(f'{L} features')

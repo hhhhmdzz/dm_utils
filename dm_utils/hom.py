@@ -177,7 +177,7 @@ class HOM(BaseEstimator):
         return self.get_scores()
 
     def get_feature_importance(self, model_idx=None, sort=True, ascending=False):
-        assert len(self._scores), 'Model is not trained yet.'
+        assert len(self._scores) > 0, 'Model is not trained yet.'
         return uu_tree.get_feature_importance_from_model(
             self.models[model_idx] if model_idx is not None else self.models,
             self.feature, sort=sort, ascending=ascending, reduce=None
@@ -189,6 +189,14 @@ class HOM(BaseEstimator):
     def feature_importance(self, model_idx=None):
         assert not (self.is_sep_model and model_idx is None), 'model_idx must be specified.'
         return self.get_feature_importance(model_idx=model_idx)
+
+    def plot_feature_importance(self, topk=20, save_img=False, save_path='feature_importance.png', show_img=True):
+        assert len(self._scores) > 0, 'Model is not trained yet.'
+        uu_tree.plot_feature_importance(
+            self.feature_importance(), topk=topk,
+            save_img=save_img, save_path=save_path,
+            show_img=show_img,
+        )
 
 
 if __name__ == '__main__':
