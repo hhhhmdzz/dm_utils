@@ -8,7 +8,7 @@ from sklearn.metrics import roc_auc_score
 from scipy.special import softmax
 
 from .tree import get_feature_importance_from_model
-from .cprint import info, success
+from .cprint import info, success, warning
 
 
 def disc_var_dist(var1, var2, target, var1_name=None, var2_name=None, target_name=None):
@@ -62,3 +62,157 @@ def disc_var_dist(var1, var2, target, var1_name=None, var2_name=None, target_nam
         data_rate.append((100 * df / df.sum().sum()).round(3).to_html())
 
     display(HTML(html.format(*data_target, *data_num, *data_rate)))
+
+
+def adversarial_validation(
+    train, test, clf=None, seed=42,
+    softmax_feature_importance=False,
+    return_feature_importance=False
+):
+    """
+    Adversarial validation
+    
+    Parameters
+    ----------
+    train: pd.DataFrame
+    test: pd.DataFrame
+    clf: sklearn.base.BaseEstimator
+    seed: int
+    softmax_feature_importance: bool
+    return_feature_importance: bool
+
+    Returns
+    -------
+    auc: float
+    train_proba: np.array, advertarial validation scores on train set
+    feature_importance[Optional]: pd.DataFrame
+    """
+    assert train.shape[1] == test.shape[1], "train and test must have the same number of features"
+
+    data = pd.concat([train, test])
+    data['is_train'] = [1] * len(train) + [0] * len(test)
+    xtrain, xtest, ytrain, ytest = train_test_split(data.drop(columns=['is_train']), data['is_train'], test_size=0.2, random_state=seed)
+
+    if clf is None:
+        clf = RandomForestClassifier(n_estimators=100, random_state=seed)
+    clf.fit(xtrain, ytrain)
+    train_proba = clf.predict_proba(train)[:, 1]
+    auc = roc_auc_score(ytest, clf.predict_proba(xtest)[:, 1])
+
+    if return_feature_importance:
+        try:
+            feature_importance = get_feature_importance_from_model(clf)
+            if softmax_feature_importance:
+                feature_importance['importance'] = softmax(feature_importance['importance'])
+            return auc, train_proba, feature_importance
+        except:
+            warning("Cannot get feature importance from model.")
+            return auc, train_proba, None
+    return auc, train_proba
+
+
+def adversarial_validation_features(
+    train, test, clf=None,
+    drop_n=1, drop_rate=None, drop_thresold=None,
+    seed=42,
+    softmax_feature_importance=False,
+    return_feature_importance=False,
+):
+    """
+    Adversarial validation with feature selection
+
+    Parameters
+    ----------
+    train: pd.DataFrame
+    test: pd.DataFrame
+    clf: sklearn.base.BaseEstimator
+    drop_n: , drop number of features
+    drop_rate: float, drop rate of features
+    drop_thresold: float, drop threshold of feature importance
+    seed: int
+    softmax_feature_importance: bool
+    return_feature_importance: bool
+
+    Returns
+    -------
+    auc: float
+    train_proba: np.array, advertarial validation scores on train set
+    drop_feas: list, features to be dropped
+    remain_feas: list, features to be remained
+    feature_importance[Optional]: pd.DataFrame
+
+    Notes
+    ----
+    Order of priority: drop_n > drop_rate > drop_thresold
+    """
+    num_feas = train.shape[1]
+    auc, train_proba, feature_importance = adversarial_validation(
+        train, test, clf, seed, return_feature_importance=True,
+        softmax_feature_importance=softmax_feature_importance)
+
+    if drop_n is not None:
+        num_drop_feas = max(1, drop_n)
+    elif drop_rate is not None:
+        num_drop_feas = max(1, int(num_feas * drop_rate))
+    elif drop_thresold is not None:
+        num_drop_feas = max(1, min(num_drop_feas, (feature_importance['importance'] > drop_thresold).sum()))
+    else:
+        num_drop_feas = 1
+    
+    drop_feas = feature_importance['feature'][:num_drop_feas].tolist()
+    remain_feas = feature_importance['feature'][num_drop_feas:].tolist()
+
+    if return_feature_importance:
+        return auc, train_proba, drop_feas, remain_feas, feature_importance
+    return auc, train_proba, drop_feas, remain_feas
+
+
+def adversarial_validation_instances(
+    train, test, clf=None,
+    select_rate=0.2, select_n=None, select_thresold=None,
+    seed=42,
+    return_data_ins=False,
+):
+    """
+    Adversarial validation with instance selection
+
+    Parameters
+    ----------
+    train: pd.DataFrame
+    test: pd.DataFrame
+    clf: sklearn.base.BaseEstimator
+    select_rate: float, select rate of instances
+    select_n: int, select number of instances
+    select_thresold: float, select threshold of instance probability
+    seed: int
+    return_data_ins: bool
+
+    Returns
+    -------
+    auc: float
+    train_proba: np.array, advertarial validation scores on train set
+    select_idx: list, indices of selected instances
+    remain_idx: list, indices of remained instances
+    select_ins[Optional]: pd.DataFrame
+    remain_ins[Optional]: pd.DataFrame
+    """
+    num_ins = train.shape[0]
+    auc, train_proba = adversarial_validation(train, test, clf, seed, return_feature_importance=False)
+
+    if select_n is not None:
+        num_select_ins = max(1, select_n)
+    elif select_rate is not None:
+        num_select_ins = max(1, int(num_ins * select_rate))
+    elif select_thresold is not None:
+        num_select_ins = max(1, min(num_select_ins, (train_proba > select_thresold).sum()))
+    else:
+        num_select_ins = int(num_ins * 0.2)
+
+    select_idx = np.argsort(train_proba)[-num_select_ins:].tolist()
+    remain_idx = np.argsort(train_proba)[:-num_select_ins].tolist()
+    select_ins = train.iloc[select_idx]  # valid
+    remain_ins = train.iloc[remain_idx]  # train
+
+    if return_data_ins:
+        return auc, train_proba, select_idx, remain_idx, (select_ins, remain_ins)
+    return auc, train_proba, select_idx, remain_idx
