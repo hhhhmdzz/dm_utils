@@ -4,6 +4,16 @@
 
 ## Installation
 
+- from source code
+
+```bash
+git clone https://github.com/hhhhmdzz/dm_utils.git
+cd dm_utils
+pip install -e .
+```
+
+- from pypi
+
 ```bash
 pip install dm_utils
 ```
