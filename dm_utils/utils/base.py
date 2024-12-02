@@ -1,5 +1,6 @@
 import os
 import json
+import random
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
@@ -7,8 +8,35 @@ import xgboost as xgb
 import lightgbm as lgb
 import catboost as cb
 import ngboost as ngb
+import torch
 from pytorch_tabnet.abstract_model import TabModel
 from pytorch_tabnet import tab_model as tabnet
+
+
+def set_seed(seed):
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    # use deterministic convolution algorithm
+    # True: easier to reproduce results
+    # False(default): faster
+    torch.backends.cudnn.deterministic = True
+    # auto tune the algorithm
+    # True(default): improves performance, not easy to reproduce results
+    # False: imporves training speed, easy to reproduce results
+    torch.backends.cudnn.benchmark = False
+    # enable cudnn
+    # True(default):
+    # False:
+    torch.backends.cudnn.enabled = True
+    # faster but less accurate
+    # True:
+    # False(default after 1.12):
+    torch.backends.cudnn.allow_tf32 = False
+    torch.backends.cuda.matmul.allow_tf32 = False
 
 
 def is_sklearn_mode(model):
