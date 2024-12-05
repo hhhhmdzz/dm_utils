@@ -145,7 +145,9 @@ def predict(task, model, x):
         if len(prediction.shape) == 2 and prediction.shape[1] == 2:
             prediction = prediction[:, 1]
     elif task == 'reg':
-        if mode1 in {'sklearn', 'lightgbm'}:
+        if mode1 == 'sklearn':
+            prediction = model.predict(x)
+        elif mode1 == 'lightgbm':
             prediction = model.predict(x.values)
         elif mode1 in {'xgboost', 'catboost'}:
             data = get_data_structure(x, None, (mode1, mode2), task)
