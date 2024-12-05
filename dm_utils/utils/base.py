@@ -40,28 +40,54 @@ def set_seed(seed):
 
 
 def is_sklearn_mode(model):
-    cb_sklearn_model = (cb.CatBoostClassifier, cb.CatBoostRegressor, cb.CatBoostRanker)
-    return isinstance(model, (BaseEstimator, *cb_sklearn_model)) or (type(model) is type and issubclass(model, BaseEstimator))
+    is_skl = is_cb = is_ngb = False
+    if type(model) is type:  # class
+        is_ngb = issubclass(model, ngb.NGBoost)
+    else:  # instance
+        is_skl = isinstance(model, BaseEstimator)
+        is_cb = isinstance(model, (cb.CatBoostClassifier, cb.CatBoostRegressor, cb.CatBoostRanker))
+    return is_skl or is_cb or is_ngb
 
 
 def is_xgboost_mode(model):
-    return isinstance(model, (xgb.Booster, xgb.XGBModel)) or model == xgb.Booster
+    is_skl = is_ori = False
+    if type(model) is type:
+        is_ori = issubclass(model, xgb.Booster)
+    else:
+        is_skl = isinstance(model, (xgb.XGBModel, xgb.Booster))
+    return is_skl or is_ori
 
 
 def is_lightgbm_mode(model):
-    return isinstance(model, (lgb.Booster, lgb.LGBMModel)) or model == lgb.Booster
+    is_skl = is_ori = False
+    if type(model) is type:
+        is_ori = issubclass(model, lgb.Booster)
+    else:
+        is_skl = isinstance(model, (lgb.LGBMModel, lgb.Booster))
+    return is_skl or is_ori
 
 
 def is_catboost_mode(model):
-    return isinstance(model, cb.CatBoost) or model == cb.CatBoost
+    is_skl = is_ori = False
+    if type(model) is type:
+        is_ori = issubclass(model, cb.CatBoost)
+    else:
+        is_skl = isinstance(model, cb.CatBoost)
+    return is_skl or is_ori
 
 
 def is_ngboost_mode(model):
-    return isinstance(model, ngb.NGBoost) or (type(model) is type and issubclass(model, ngb.NGBoost))
+    if type(model) is type:
+        return issubclass(model, ngb.NGBoost)
+    else:
+        return isinstance(model, ngb.NGBoost)
 
 
 def is_tabnet_mode(model):
-    return isinstance(model, TabModel)
+    if type(model) is type:
+        return False
+    else:
+        return isinstance(model, TabModel)
 
 
 def get_model_mode(model):
@@ -95,6 +121,15 @@ def get_model_mode(model):
 def get_model_name(model):
     mode1, mode2 = get_model_mode(model)
     if mode1 == 'sklearn':
+        if mode2 == 'ngboost' and type(model) is type:
+            if issubclass(model, ngb.NGBClassifier):
+                return 'NGBClassifier'
+            elif issubclass(model, ngb.NGBRegressor):
+                return 'NGBRegressor'
+            elif issubclass(model, ngb.NGBSurvival):
+                return 'NGBSurvival'
+            else:
+                raise ValueError(f"model {model} is not supported")
         return model.__class__.__name__
     else:
         if mode2 == 'xgboost':
@@ -150,4 +185,36 @@ def load_json(file_path):
 
 
 if __name__ == '__main__':
-    pass
+    from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+
+    print('regression:')
+    models = [
+        DecisionTreeRegressor(),
+        xgb.XGBRegressor(),
+        lgb.LGBMRegressor(),
+        cb.CatBoostRegressor(),
+        ngb.NGBRegressor,
+        ngb.NGBRegressor(),
+        tabnet.TabNetRegressor(),
+        xgb.Booster,
+        lgb.Booster,
+        cb.CatBoost,
+    ]
+    for model in models:
+        print(get_model_mode(model))
+
+    print('classification:')
+    models = [
+        DecisionTreeClassifier(),
+        xgb.XGBClassifier(),
+        lgb.LGBMClassifier(),
+        cb.CatBoostClassifier(),
+        ngb.NGBClassifier,
+        ngb.NGBClassifier(),
+        tabnet.TabNetClassifier(),
+        xgb.Booster,
+        lgb.Booster,
+        cb.CatBoost,
+    ]
+    for model in models:
+        print(get_model_mode(model))
