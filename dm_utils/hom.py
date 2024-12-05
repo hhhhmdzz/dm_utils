@@ -72,7 +72,46 @@ class HOM(BaseEstimator):
         self.num_models = len(self.model) if self.is_sep_model else 1
         self.all_model_name = ','.join(np.unique(self.model_name).tolist()) if self.is_sep_model else self.model_name
 
-    def fit(self, X_train, y_train, X_valid=None, y_valid=None, test_size=0.2, record_time=True, **kwargs):
+    def fit(
+        self, X_train, y_train, X_valid=None, y_valid=None, test_size=0.2,
+        class_weight=None, weight_train=None, weight_valid=None,
+        model_params=None, train_params=None, record_time=True, **kwargs
+    ):
+        """
+        train model
+        
+        Parameters
+        ----------
+        X_train: training data
+        y_train: training label
+        X_valid: validation data
+        y_valid: validation label
+        test_size: test size if X_valid and y_valid are not provided
+        class_weight: dict, class weight
+        weight_train: array-like, train sample weight
+        weight_valid: array-like, valid sample weight
+        model_params: model params
+        train_params: train params
+        record_time: whether record time
+        kwargs: other params
+
+        Returns
+        -------
+        scores
+
+        Notes
+        -----
+        every sample weight = sample_weight[i] * class_weight[c], i: sample index, c: class index
+        """
+        if model_params is None:
+            model_params = [None for _ in range(self.num_models)]
+        elif self.is_sep_model:
+            assert len(model_params) == self.num_models, f'len(model_params) must equal to folds if model_params is not None, but len(model_params) == {len(model_params)} != num_models == {self.num_models}'
+        if train_params is None:
+            train_params = [None for _ in range(self.num_models)]
+        elif self.is_sep_model:
+            assert len(train_params) == self.num_models, f'len(train_params) must equal to folds if train_params is not None, but len(train_params) == {len(train_params)} != num_models == {self.num_models}'
+
         self.models = [] if self.is_sep_model else None
         self.feature = X_train.columns.tolist()
         self.indexes = np.arange(len(X_train))
@@ -81,9 +120,14 @@ class HOM(BaseEstimator):
         if X_valid is None and y_valid is None:
             uu_print.info('not provided X_valid and y_valid, auto split train set into train and valid.')
             X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=test_size, random_state=self.seed)
+            if weight_train is not None:
+                weight_train, weight_valid = train_test_split(weight_train, test_size=test_size, random_state=self.seed)
 
-        self.train_size = len(X_train)
-        self.valid_size = len(X_valid)
+        if class_weight is not None:
+            _ = y_train.map(class_weight).values
+            weight_train = _ if weight_train is None else weight_train * _
+            _ = y_valid.map(class_weight).values
+            weight_valid = _ if weight_valid is None else weight_valid * _
 
         self.num_classes = len(np.unique(y_train)) if self._task == 'cls' else None
 
@@ -99,12 +143,14 @@ class HOM(BaseEstimator):
             model = u_param.set_params(
                 model, epochs=self.epochs, lr=self.lr, eval_rounds=self.eval_rounds,
                 early_stop_rounds=self.early_stop_rounds, log_level=self.log_level,
-                seed=self.seed, num_classes=self.num_classes)  # set params
+                seed=self.seed, num_classes=self.num_classes, params=model_params[i])  # set params
             model_name = self.model_name[i] if self.is_sep_model else self.model_name
 
             uu_print.info(f"Model {model_name} {i+1} / {self.num_models} training begin.")
             model = u_runner.train(
                 self._task, model, X_train, y_train, X_valid, y_valid,
+                params=train_params[i],
+                weight=weight_train, weight_evals=weight_valid,
                 epochs=self.epochs, lr=self.lr, eval_rounds=self.eval_rounds,
                 early_stop_rounds=self.early_stop_rounds, log_level=self.log_level)  # train
             if self.is_sep_model:

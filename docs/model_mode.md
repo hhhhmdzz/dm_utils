@@ -79,31 +79,45 @@
 | lightgbm, lightgbm |           train(callbacks)           |   train(params['verbosity'])   |
 | catboost, catboost |     train(early_stopping_rounds)     | train(params['logging_level']) |
 
-|  `mode1`, `mode2`  | `data` 训练数据  | `data_evals` 验证数据 |      |      |
-| :----------------: | :--------------: | :-------------------: | :--: | :--: |
-|  sklearn, sklearn  |    fit(x, y)     |           -           |      |      |
-|  sklearn, xgboost  |    fit(x, y)     |     fit(eval_set)     |      |      |
-| sklearn, lightgbm  |    fit(x, y)     |     fit(eval_set)     |      |      |
-| sklearn, catboost  |    fit(x, y)     |     fit(eval_set)     |      |      |
-|  sklearn, ngboost  |    fit(x, y)     |   fit(X_val, Y_val)   |      |      |
-|  sklearn, tabnet   |    fit(x, y)     |     fit(eval_set)     |      |      |
-|  xgboost, xgboost  |  train(dtrain)   |     train(evals)      |      |      |
-| lightgbm, lightgbm | train(train_set) |   train(valid_sets)   |      |      |
-| catboost, catboost |  train(dtrain)   |    train(eval_set)    |      |      |
+|  `mode1`, `mode2`  | `data` 训练数据  | `data_evals` 验证数据 |
+| :----------------: | :--------------: | :-------------------: |
+|  sklearn, sklearn  |    fit(x, y)     |           -           |
+|  sklearn, xgboost  |    fit(x, y)     |     fit(eval_set)     |
+| sklearn, lightgbm  |    fit(x, y)     |     fit(eval_set)     |
+| sklearn, catboost  |    fit(x, y)     |     fit(eval_set)     |
+|  sklearn, ngboost  |    fit(x, y)     |   fit(X_val, Y_val)   |
+|  sklearn, tabnet   |    fit(x, y)     |     fit(eval_set)     |
+|  xgboost, xgboost  |  train(dtrain)   |     train(evals)      |
+| lightgbm, lightgbm | train(train_set) |   train(valid_sets)   |
+| catboost, catboost |  train(dtrain)   |    train(eval_set)    |
+
+|  `mode1`, `mode2`  |                   `class_weight` 类别权重                    |   `sample_weight` 样本权重    |
+| :----------------: | :----------------------------------------------------------: | :---------------------------: |
+|  sklearn, sklearn  |                 BaseEstimator(class_weight)                  |      fit(sample_weight)       |
+|  sklearn, xgboost  |               BaseEstimator(scale_pos_weight)                |      fit(sample_weight)       |
+| sklearn, lightgbm  | BaseEstimator(class_weight)<br>BaseEstimator(is_unbalance)<br>BaseEstimator(scale_pos_weight) |      fit(sample_weight)       |
+| sklearn, catboost  | BaseEstimator(class_weights)<br>BaseEstimator(scale_pos_weight) |      fit(sample_weight)       |
+|  sklearn, ngboost  |                              -                               |      fit(sample_weight)       |
+|  sklearn, tabnet   |                              -                               |               -               |
+|  xgboost, xgboost  |              train(params['scale_pos_weight'])               | DMatrix(weight)<br>train(obj) |
+| lightgbm, lightgbm | train(params['is_unbalance'])<br>train(params['scale_pos_weight']) |        Dataset(weight)        |
+| catboost, catboost | train(params['class_weights'])<br>train(params['scale_pos_weight']) |         Pool(weight)          |
 
 >注：
 >ngboost 只有 `NGBRegressor` 支持 `early_stop_rounds`，`NGBClassifier` 不支持
+>`scale_pos_weight` 是二分类中正样本的权重，负样本的权重为 1
+>`class_weight` 和 `sample_weight` 本质一样，`class_weight` * `sample_weight` 为最终权重，推荐使用 `sample_weight`
 
 特征、特诊重要性属性/方法：
 
-|  `mode1`, `mode2`  |   `feature` 特征   | `importance` 特征重要性 |      |
-| :----------------: | :----------------: | :---------------------: | :--: |
-|  sklearn, sklearn  | feature_names_in_  |  feature_importances_   |      |
-|  sklearn, xgboost  | feature_names_in_  |  feature_importances_   |      |
-| sklearn, lightgbm  |   feature_name_    |  feature_importances_   |      |
-| sklearn, catboost  |   feature_names_   |  feature_importances_   |      |
-|  sklearn, ngboost  |         -          |  feature_importances_   |      |
-|  sklearn, tabnet   |         -          |  feature_importances_   |      |
-|  xgboost, xgboost  | get_score().keys() |  get_score().values()   |      |
-| lightgbm, lightgbm |   feature_name()   |  feature_importance()   |      |
-| catboost, catboost |   feature_names_   |  feature_importances_   |      |
+|  `mode1`, `mode2`  |   `feature` 特征   | `importance` 特征重要性 |
+| :----------------: | :----------------: | :---------------------: |
+|  sklearn, sklearn  | feature_names_in_  |  feature_importances_   |
+|  sklearn, xgboost  | feature_names_in_  |  feature_importances_   |
+| sklearn, lightgbm  |   feature_name_    |  feature_importances_   |
+| sklearn, catboost  |   feature_names_   |  feature_importances_   |
+|  sklearn, ngboost  |         -          |  feature_importances_   |
+|  sklearn, tabnet   |         -          |  feature_importances_   |
+|  xgboost, xgboost  | get_score().keys() |  get_score().values()   |
+| lightgbm, lightgbm |   feature_name()   |  feature_importance()   |
+| catboost, catboost |   feature_names_   |  feature_importances_   |

@@ -21,7 +21,7 @@ def get_model_from_str(task, model_str, sklearn_api):
     return model
 
 
-def get_data_structure(x, y, model_mode, task):
+def get_data_structure(x, y, model_mode, task, weight=None):
     task_set = {'cls', 'reg'}
     assert task in task_set, f"task must be in {task_set}, but got {task}"
     
@@ -32,9 +32,9 @@ def get_data_structure(x, y, model_mode, task):
     assert mode2 in mode2_set, f"model_mode must be in {mode2_set}, but got {mode2}"
 
     if task == 'cls':
-        data = get_cls_data_structure(x, y, model_mode)
+        data = get_cls_data_structure(x, y, model_mode, weight)
     elif task == 'reg':
-        data = get_reg_data_structure(x, y, model_mode)
+        data = get_reg_data_structure(x, y, model_mode, weight)
 
     return data
 

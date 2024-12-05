@@ -60,7 +60,7 @@ def get_cls_model_from_str(model_str, sklearn_api):
     return deepcopy(model)
 
 
-def get_cls_data_structure(x, y, model_mode):
+def get_cls_data_structure(x, y, model_mode, weight=None):
     mode1, mode2 = model_mode
     if mode1 == 'sklearn':
         if mode2 == 'tabnet':
@@ -75,11 +75,11 @@ def get_cls_data_structure(x, y, model_mode):
                 y = y[:, 0]
         data = (x, ) if y is None else (x, y)
     elif mode1 == mode2 == 'xgboost':
-        data = xgb.DMatrix(x, label=y)
+        data = xgb.DMatrix(x, label=y, weight=weight)
     elif mode1 == mode2 == 'lightgbm':
-        data = (x, ) if y is None else lgb.Dataset(x, label=y)
+        data = (x, ) if y is None else lgb.Dataset(x, label=y, weight=weight)
     elif mode1 == mode2 == 'catboost':
-        data = cb.Pool(x, label=y)
+        data = cb.Pool(x, label=y, weight=weight)
 
     return data
 

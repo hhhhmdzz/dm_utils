@@ -79,7 +79,26 @@ class OOF(BaseEstimator):
             self.model_name = uu_base.get_model_name(self.model)
         self.all_model_name = ','.join(np.unique(self.model_name).tolist()) if self.is_sep_model else self.model_name
 
-    def fit(self, X_train, y_train, record_time=True, **kwargs):
+    def fit(
+        self, X_train, y_train,
+        class_weight=None, weight_train=None,
+        model_params=None, train_params=None, record_time=True, **kwargs
+    ):
+        """
+        train model
+        
+        Parameters
+        ----------
+        """
+        if model_params is None:
+            model_params = [None for _ in range(self.folds)]
+        else:
+            assert len(model_params) == self.folds, f'len(model_params) must equal to folds if model_params is not None, but len(model_params) == {len(model_params)} != folds == {self.folds}'
+        if train_params is None:
+            train_params = [None for _ in range(self.folds)]
+        else:
+            assert len(train_params) == self.folds, f'len(train_params) must equal to folds if train_params is not None, but len(train_params) == {len(train_params)} != folds == {self.folds}'
+        
         self.models = []
         self.feature = X_train.columns.tolist()
         self.indexes = np.arange(len(X_train))
@@ -105,14 +124,25 @@ class OOF(BaseEstimator):
             model = u_param.set_params(
                 model, epochs=self.epochs, lr=self.lr, eval_rounds=self.eval_rounds,
                 early_stop_rounds=self.early_stop_rounds, log_level=self.log_level,
-                seed=self.seed, num_classes=self.num_classes)  # set params
+                seed=self.seed, num_classes=self.num_classes, params=model_params[i])  # set params
             model_name = self.model_name[i] if self.is_sep_model else self.model_name
 
             uu_print.info(f"Model {model_name}, Fold {i+1} / {self.folds} training begin.")
             X_trn, X_val = X_train.iloc[trn_idx], X_train.iloc[val_idx]
             y_trn, y_val = y_train.iloc[trn_idx], y_train.iloc[val_idx]
+            if weight_train is not None:
+                w_trn, w_val = weight_train[trn_idx], weight_train[val_idx]
+            else:
+                w_trn, w_val = None, None
+            if class_weight is not None:
+                _ = y_trn.map(class_weight).values
+                w_trn = _ if w_trn is None else w_trn * _
+                _ = y_val.map(class_weight).values
+                w_val = _ if w_val is None else w_val * _
             model = u_runner.train(
                 self._task, model, X_trn, y_trn, X_val, y_val,
+                params=model_params[i],
+                weight=w_trn, weight_evals=w_val,
                 epochs=self.epochs, lr=self.lr, eval_rounds=self.eval_rounds,
                 early_stop_rounds=self.early_stop_rounds, log_level=self.log_level)  # train
             self.models.append(deepcopy(model))

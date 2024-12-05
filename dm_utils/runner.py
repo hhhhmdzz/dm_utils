@@ -11,28 +11,41 @@ from .task import get_model_from_str, get_data_structure
 from .param import get_model_params, get_gpu_params
 
 
-def train(task, model, x, y, x_evals, y_evals, params=None, epochs=1000, lr=0.01, eval_rounds=100, early_stop_rounds=1000, log_level=0, use_gpu4tree=False):
+def train(
+    task, model, x, y, x_evals, y_evals, params=None,
+    weight=None, weight_evals=None,
+    epochs=1000, lr=0.01, eval_rounds=100, early_stop_rounds=1000, log_level=0,
+    use_gpu4tree=False, *args, **kwargs
+):
     """
 
-    Args:
-        task
-        model
-        x
-        y
-        x_evals
-        y_evals
-        params
-        epochs
-        eval_rounds
-        early_stop_rounds
-        log_level: [-1, 0, 1, 2, 3]
+    Parameters
+    ----------
+    task: reg, cls
+    model: model, str, list of model, list of str
+    x: x_train
+    y: y_train
+    x_evals: x_valid
+    y_evals: y_valid
+    params: model training params
+    weight: train weight
+    weight_evals: valid weight
+    epochs: number of epochs
+    lr: learning rate
+    eval_rounds: number of rounds to evaluate
+    early_stop_rounds: number of rounds to early stop
+    log_level: [-1, 0, 1, 2, 3]
+    use_gpu4tree: use gpu for tree model
+    *args
+    **kwargs
     
-    Returns:
+    Returns
+    -------
         model
     """
     mode1, mode2 = get_model_mode(model)
-    data = get_data_structure(x, y, (mode1, mode2), task)
-    data_evals = get_data_structure(x_evals, y_evals, (mode1, mode2), task)
+    data = get_data_structure(x, y, (mode1, mode2), task, weight)
+    data_evals = get_data_structure(x_evals, y_evals, (mode1, mode2), task, weight_evals)
 
     params = dict() if params is None else params
     if mode1 != 'sklearn':
@@ -49,32 +62,63 @@ def train(task, model, x, y, x_evals, y_evals, params=None, epochs=1000, lr=0.01
 
     if mode1 == 'sklearn':
         if mode2 == 'xgboost':
+            params['sample_weight'] = weight
+            params['sample_weight_eval_set'] = weight_evals
             model.fit(*data, eval_set=[data_evals], verbose=eval_rounds, **params)
         elif mode2 == 'lightgbm':
+            params['sample_weight'] = weight
+            params['eval_sample_weight'] = weight_evals
+            params['eval_class_weight'] = None
             callbacks = [lgb.log_evaluation(period=eval_rounds), lgb.early_stopping(stopping_rounds=early_stop_rounds)]
             model.fit(*data, eval_set=data_evals, eval_names='valid', callbacks=callbacks, **params)
         elif mode2 == 'catboost':
+            params['sample_weight'] = weight
             model.fit(*data, eval_set=data_evals, verbose_eval=eval_rounds, early_stopping_rounds=early_stop_rounds, **params)
         elif mode2 == 'ngboost':
+            params['sample_weight'] = weight
+            params['val_sample_weight'] = weight_evals
             model.fit(*data, *data_evals, **params)
         elif mode2 == 'tabnet':
             model.fit(*data, eval_set=[data_evals], max_epochs=epochs, patience=early_stop_rounds, **params)
         else:
+            params['sample_weight'] = weight
             model.fit(*data, **params)
     elif mode1 == 'xgboost':
         params['verbosity'] = get_log_level(mode2, log_level)
         params['eta'] = lr
-        model = xgb.train(params=params, dtrain=data, evals=[(data_evals, 'valid'), ], num_boost_round=epochs, verbose_eval=eval_rounds, early_stopping_rounds=early_stop_rounds)
+        model = xgb.train(
+            params=params,
+            dtrain=data,
+            evals=[(data_evals, 'valid'), ],
+            num_boost_round=epochs,
+            verbose_eval=eval_rounds,
+            early_stopping_rounds=early_stop_rounds,
+        )
     elif mode1 == 'lightgbm':
         params['verbosity'] = get_log_level(mode2, log_level)
         params['num_boost_round'] = epochs
         params['learning_rate'] = lr
-        callbacks = [lgb.log_evaluation(period=eval_rounds), lgb.early_stopping(stopping_rounds=early_stop_rounds)]
-        model = lgb.train(params=params, train_set=data, valid_sets=data_evals, callbacks=callbacks)
+        callbacks = [
+            lgb.log_evaluation(period=eval_rounds),
+            lgb.early_stopping(stopping_rounds=early_stop_rounds),
+        ]
+        model = lgb.train(
+            params=params,
+            train_set=data,
+            valid_sets=data_evals,
+            callbacks=callbacks,
+        )
     elif mode1 == 'catboost':
         params['logging_level'] = get_log_level(mode2, log_level)
         params['learning_rate'] = lr
-        model = cb.train(params=params, dtrain=data, eval_set=data_evals, iterations=epochs, verbose_eval=eval_rounds, early_stopping_rounds=early_stop_rounds)
+        model = cb.train(
+            params=params,
+            dtrain=data,
+            eval_set=data_evals,
+            iterations=epochs,
+            verbose_eval=eval_rounds,
+            early_stopping_rounds=early_stop_rounds,
+        )
     
     return model
 
