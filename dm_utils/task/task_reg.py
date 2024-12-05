@@ -2,8 +2,14 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from sklearn.base import BaseEstimator
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
+from sklearn.ensemble import (
+    RandomForestRegressor, ExtraTreesRegressor,
+    GradientBoostingRegressor, HistGradientBoostingRegressor
+)
 import xgboost as xgb
 import lightgbm as lgb
 import catboost as cb
@@ -15,8 +21,15 @@ from dm_utils.utils import cprint as uu_print
 from dm_utils.param.set_params import set_params
 
 _str2skl_reg_model = {
+    'lr': LinearRegression(),
+    'svm': SVR(),
+    'knn': KNeighborsRegressor(),
     'dt': DecisionTreeRegressor(),
+    'et': ExtraTreeRegressor(),
     'rf': RandomForestRegressor(),
+    'ets': ExtraTreesRegressor(),
+    'gb': GradientBoostingRegressor(),
+    'hgb': HistGradientBoostingRegressor(),
     'xgb': xgb.XGBRegressor(),
     'xgboost': xgb.XGBRegressor(),
     'lgb': lgb.LGBMRegressor(),

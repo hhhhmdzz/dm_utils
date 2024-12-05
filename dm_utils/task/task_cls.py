@@ -2,8 +2,15 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from sklearn.base import BaseEstimator
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
+from sklearn.ensemble import (
+    RandomForestClassifier, ExtraTreesClassifier,
+    GradientBoostingClassifier, HistGradientBoostingClassifier,
+)
 import xgboost as xgb
 import lightgbm as lgb
 import catboost as cb
@@ -15,8 +22,16 @@ from dm_utils.utils import cprint as uu_print
 from dm_utils.param.set_params import set_params
 
 _str2skl_cls_model = {
+    'lr': LogisticRegression(),
+    'svm': SVC(probability=True),
+    'knn': KNeighborsClassifier(),
+    'gnb': GaussianNB(),
     'dt': DecisionTreeClassifier(),
+    'et': ExtraTreeClassifier(),
     'rf': RandomForestClassifier(),
+    'ets': ExtraTreesClassifier(),
+    'gb': GradientBoostingClassifier(),
+    'hgb': HistGradientBoostingClassifier(),
     'xgb': xgb.XGBClassifier(),
     'xgboost': xgb.XGBClassifier(),
     'lgb': lgb.LGBMClassifier(),
