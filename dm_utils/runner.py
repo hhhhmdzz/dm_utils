@@ -1,3 +1,4 @@
+import inspect
 import numpy as np
 import pandas as pd
 import xgboost as xgb
@@ -81,7 +82,9 @@ def train(
         elif mode2 == 'tabnet':
             model.fit(*data, eval_set=[data_evals], max_epochs=epochs, patience=early_stop_rounds, **params)
         else:
-            params['sample_weight'] = weight
+            sig = inspect.signature(model.fit)
+            if 'sample_weight' in sig.parameters.keys():
+                params['sample_weight'] = weight
             model.fit(*data, **params)
     elif mode1 == 'xgboost':
         params['verbosity'] = get_log_level(mode2, log_level)

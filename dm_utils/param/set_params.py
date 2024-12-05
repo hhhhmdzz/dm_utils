@@ -1,3 +1,4 @@
+import inspect
 import xgboost as xgb
 import lightgbm as lgb
 import catboost as cb
@@ -57,6 +58,11 @@ def set_params(
                         random_state=seed,
                         **params
                     )
+                elif isinstance(model, BaseEstimator):
+                    sig = inspect.signature(model.set_params)
+                    if 'random_state' in sig.parameters.keys():
+                        model.set_params(random_state=seed)
+                    model.set_params(**params)
             elif isinstance(model, BaseEstimator) \
                 and isinstance(model, xgb.XGBModel):  # mode2 == 'xgboost'
                 log_level = get_log_level('xgb', log_level)
