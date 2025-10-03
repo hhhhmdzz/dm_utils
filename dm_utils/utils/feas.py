@@ -1,14 +1,73 @@
+import math
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 from IPython.display import display
 from IPython.core.display import HTML
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score
 from scipy.special import softmax
+from typing import Optional
 
 from .tree import get_feature_importance_from_model
 from .cprint import info, success, warning
+
+
+def cont_var_dist(
+    train: pd.DataFrame,
+    test: Optional[pd.DataFrame] = None,
+    titles: Optional[list[str]] = None,
+    ncol: Optional[int] = None,
+    plot_kde=True, plot_hist=True,
+    hist_multiple='stack',
+    show_img=True, save_img=False, img_name=None,
+    return_figs=False,
+):
+    feas = list(train.columns)
+    feas_num = train.shape[1]
+    titles = range(feas_num) if titles is None else titles
+
+    data = pd.concat((train, test), axis=0) if test is not None else train.copy()
+    data = data.reset_index(drop=True)
+    data['is_train'] = data.index < len(train)
+
+    figs = []
+    ncol = int(np.ceil(feas_num**.5)) if ncol is None else ncol
+    for i, fea in enumerate(feas):
+        if i % ncol**2 == 0:
+            plt.figure(figsize=(4 * ncol, 4 * ncol), dpi=100)
+        plt.subplot(ncol, ncol, i % ncol**2 + 1)
+        plt.title(f'[{titles[i]}]{feas[i]}')
+        if plot_kde:
+            ax = sns.kdeplot(data.query('is_train == 1')[fea], shade=True, color='r', label='train')
+            ax = sns.kdeplot(data.query('is_train == 0')[fea], shade=True, color='b', label='test')
+            # ax = sns.kdeplot(data.query('is_train == 1')[fea], fill=True, color='r', label='train')  # new version
+            # ax = sns.kdeplot(data.query('is_train == 0')[fea], fill=True, color='b', label='test')  # new version
+            ax.set_xlabel('')
+            ax.set_ylabel('')
+            ax.legend(loc='upper left')
+        else:
+            plt.yticks([])
+        if plot_hist:
+            ax2 = plt.twinx()
+            ax2 = sns.histplot(data=data, x=fea, hue='is_train', bins=10, multiple=hist_multiple, legend=True, alpha=0.25)
+            ax2.set_xlabel('')
+            ax2.set_ylabel('')
+            ax2.legend(['train', 'test'], loc='upper right')
+        if (i % ncol**2 == ncol**2 - 1) or (i == feas_num - 1):
+            if return_figs:
+                figs.append(plt.gcf())
+            if save_img:
+                plt.savefig(img_name)
+            if show_img:
+                plt.show()
+            else:
+                plt.close()
+    if return_figs:
+        return figs
+    return None
 
 
 def disc_var_dist(var1, var2, target, var1_name=None, var2_name=None, target_name=None):
